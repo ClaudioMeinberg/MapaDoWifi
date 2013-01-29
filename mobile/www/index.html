@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Mapa do Wifi</title>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="js/cordova-2.2.0.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/jquery.mobile-1.1.0.min.js"></script>
+<link rel="stylesheet" href="css/jquery.mobile-1.1.0.css" />
+
+<!--<script src="js/ui/min/jquery.ui.map.full.min.js" type="text/javascript"></script>-->
+		<script type="text/javascript" src="js/ui/jquery.ui.map.js"></script>
+		<script type="text/javascript" src="js/ui/jquery.ui.map.services.js"></script>
+		<script type="text/javascript" src="js/ui/jquery.ui.map.extensions.js"></script>
+
+<script>
+    document.addEventListener("deviceready", onDeviceReady, false);
+    
+    function onDeviceReady() {
+        navigator.geolocation.getCurrentPosition(onSuccessPosition, onErrorPosition);
+    }
+
+    // onSuccess Geolocation
+    //
+    function onSuccessPosition(position) {
+//        var element = document.getElementById('geolocation');
+//        alert( 'Latitude: '           + position.coords.latitude              + '<br />' +
+//                            'Longitude: '          + position.coords.longitude             + '<br />' +
+//                            'Altitude: '           + position.coords.altitude              + '<br />' +
+//                            'Accuracy: '           + position.coords.accuracy              + '<br />' +
+//                            'Altitude Accuracy: '  + position.coords.altitudeAccuracy      + '<br />' +
+//                            'Heading: '            + position.coords.heading               + '<br />' +
+//                            'Speed: '              + position.coords.speed                 + '<br />' +
+//                            'Timestamp: '          +                                   position.timestamp          + '<br />');
+        console.log('entrou');
+        console.log(position.coords.latitude + ',' + position.coords.longitude);
+        console.log(mobileDemo.center);
+        mobileDemo.center = position.coords.latitude + ',' + position.coords.longitude;
+        console.log(mobileDemo.center);
+        loadMap();
+    }
+
+    // onError Callback receives a PositionError object
+    //
+    function onErrorPosition(error) {
+        alert('code: '    + error.code    + '\n' +
+                'message: ' + error.message + '\n');
+    }
+</script>
+
+<script>
+	var mobileDemo = { 'center': '-23.560781,-46.686873', 'zoom': 12 };
+	var inicio = new google.maps.LatLng(-23.560781, -46.686873);
+	var fim = new google.maps.LatLng(-23.559385, -46.689126);
+	var Marcador;
+	
+	$('#home').live('pageinit', function() {
+//		loadMap();
+	});
+
+	function loadMap(){
+		$('#map_canvas').gmap({ 'center': mobileDemo.center, 'zoom': mobileDemo.zoom, 'callback': function() { } });
+		//$('#map_canvas').gmap('addMarker', { 'position': new google.maps.LatLng(mobileDemo.center) }, function(map, marker){ marker.setAnimation(google.maps.Animation.BOUNCE); Marcador = marker; }  );
+        $('#map_canvas').gmap('refresh'); 
+	}
+
+	$('#comoChegar').live('pageinit', function() {
+		$('#map_canvas2').gmap({ 'center': mobileDemo.center, 'zoom': mobileDemo.zoom, 'callback': function() { } });
+	});
+
+	$('#comoChegar').live('pageshow', function() {
+		
+		//Traça rota
+		$('#map_canvas2').gmap('displayDirections', { 'origin': inicio, 'destination': fim, 'travelMode': google.maps.DirectionsTravelMode.WALKING }, { }, function(success, result) { if ( success ){ } });
+		
+		//Atualiza mapa - evita bug de não exibir marcador ou rota
+		$('#map_canvas2').gmap('refresh'); 
+
+		//Inclui marcador saltitante
+		$('#map_canvas2').gmap('addMarker', { 'position': new google.maps.LatLng(-23.559916, -46.688719) }, function(map, marker){ marker.setAnimation(google.maps.Animation.BOUNCE); Marcador = marker; }  );
+			
+	});
+	
+	
+	// Exemplo de inserção de marcador por posição
+//		var posAtual = new google.maps.LatLng(-23.560781, -46.686873);
+//		Marcador.setPosition(posAtual);
+	
+</script>
+</head>
+<body>
+		<div id="home" data-role="page">
+			<div data-role="header">
+				<h1>Mapa do WiFi <span id="version"></span></h1>
+				<a href="#novo" data-icon="gear" class="ui-btn-right" data-transition="flip">Novo</a>
+			</div>
+
+			<div data-role="content">					
+				<div class="ui-bar-c ui-corner-all ui-shadow" style="padding:1em;">
+					<div id="map_canvas" style="height:350px;"></div>
+				</div>
+				<!--<ul data-role="listview" data-inset="true" data-theme="c" data-dividertheme="a"> 
+					<li><a href="#comoChegar">Onde tem?</a></li> 
+				</ul>-->
+			</div>
+      
+			<div data-role="footer">
+				<h3>CC BY-SA 3.0 BR</h3>
+			</div>
+		</div>
+
+		<div id="novo" data-role="page">
+			<div data-role="header">
+				<h1>Mapa do WiFi - Novo <span id="version"></span></h1>
+				<a data-rel="back" data-icon="back" >Cancelar</a>
+				<a href="#"  data-icon="check" >Inserir</a>
+			</div>
+
+			<div data-role="content">					
+				<ul data-role="listview" data-inset="true" data-theme="c" data-dividertheme="a"> 
+					<li>
+						<label for="cboType">Tipo de lugar:</label>
+    					<select name="cboType" id="cboType">
+    						<option>Bar</option>
+    						<option>Restaurante</option>
+    						<option>Hotel</option>
+    						<option>Livraria</option>
+    						<option>Outros</option>
+    					</select>		
+					</li>
+					<li>
+						<label for="txtName">Nome do Estabelecimento:</label>
+    					<input type="text" name="txtName" id="txtName" value=""  />
+					</li>
+					<li>
+						<label for="txtAddress">Endere&ccedil;o:</label>
+    					<input type="text" name="txtAddress" id="txtAddress" value=""  />
+					</li>
+					<li>
+						<label for="txtSSID">Nome da Rede:</label>
+    					<input type="text" name="txtSSID" id="txtSSID" value=""  />
+					</li>
+					<li>
+						<label for="cboProtected">Protegida por senha?</label>
+    					<select name="cboProtected" id="cboProtected">
+    						<option>N&atilde;o</option>
+    						<option>Sim</option>
+    					</select>
+					</li>
+					<li>
+						<label for="txtPassword">Senha:</label>
+    					<input type="text" name="txtPassword" id="txtPassword" value=""  />
+					</li>
+					<!--<li><a href="#comoChegar">Onde tem?</a></li>-->
+					<li>
+						<div data-role="controlgroup" data-type="horizontal">
+							<button data-rel="back" data-icon="back">CANCELAR</button><button data-icon="check">INSERIR</button>
+						</div>
+					</li>
+				</ul>
+			</div>
+      
+			<div data-role="footer">
+				<h3>CC BY-SA 3.0 BR</h3>
+			</div>
+		</div>
+
+		<div id="comoChegar" data-role="page">
+			<div data-role="header">
+				<h1>Aqui tem!</h1>
+				<a data-rel="back">Back</a>
+			</div>
+
+			<div data-role="content">	
+				<div class="ui-bar-c ui-corner-all ui-shadow" style="padding:1em;">
+					<div id="map_canvas2" style="height:350px;"></div>
+				</div>
+        <button onclick="botao();">teste</button>
+			</div>
+		</div>
+
+</body>
+</html>
