@@ -1,0 +1,15 @@
+CREATE  TABLE `mapadowifi`.`mapa` (
+  `IDENT` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `lat` VARCHAR(50) NOT NULL ,
+  `long` VARCHAR(50) NOT NULL ,
+  `type` INT NULL ,
+  `name` VARCHAR(200) NULL ,
+  `address` VARCHAR(45) NULL ,
+  `SSID` VARCHAR(45) NULL ,
+  `protected` CHAR(1) NULL DEFAULT 'N' ,
+  `password` VARCHAR(100) NULL ,
+  `effdt` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ,
+  PRIMARY KEY (`IDENT`) ,
+  UNIQUE INDEX `IDENT_UNIQUE` (`IDENT` ASC) ,
+  INDEX `LAT_LONG` (`lat` ASC, `long` ASC) ,
+  INDEX `TYPE` (`type` ASC) );
