@@ -28,6 +28,7 @@
 	<string>cloud</string>
 	<key>ExternalHosts</key>
 	<array>
+		<string>http://*.mapadowifi.com.br</string>
 		<string>http://*.googleapis.com</string>
 		<string>http://*.gstatic.com</string>
 	</array>
