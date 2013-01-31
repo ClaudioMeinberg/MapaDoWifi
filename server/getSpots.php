@@ -7,10 +7,11 @@
 
 	if (!is_numeric($lat) || !is_numeric($long)) die('Error: Invalid data.');
 
-	//header('Content-Type: application/javascript');
-	header('Content-Type: application/json');
+	//aumenta o range da busca
+	$lat = $lat > 0 ? substr($lat, 0, 5) : substr($lat, 0, 6);
+	$long = $long > 0 ? substr($long, 0, 5) : substr($long, 0, 6);
 
-	$strSQL = "SELECT lat, `long`, type, name, address, SSID, protected, password, effdt FROM mapa";
+	$strSQL = "SELECT lat, `long`, type, name, address, SSID, protected, password, effdt FROM mapa WHERE lat LIKE '$lat%' AND `long` LIKE '$long%'";
 	$query = mysql_query($strSQL);
 
 	$results = array();
@@ -28,5 +29,8 @@
 	      'effdt' => $rs['effdt']
 	   	);
 	};
+
+	//header('Content-Type: application/javascript');
+	header('Content-Type: application/json');
 	print json_encode($results);
 ?>
