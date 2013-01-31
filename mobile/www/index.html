@@ -9,7 +9,7 @@
 <script type="text/javascript" charset="utf-8" src="js/jquery.mobile-1.1.0.min.js"></script>
 <link rel="stylesheet" href="css/jquery.mobile-1.1.0.css" />
 
-<!--<script src="js/ui/min/jquery.ui.map.full.min.js" type="text/javascript"></script>-->
+		<script src="js/ui/min/jquery.ui.map.full.min.js" type="text/javascript"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.map.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.map.services.js"></script>
 		<script type="text/javascript" src="js/ui/jquery.ui.map.extensions.js"></script>
@@ -24,21 +24,35 @@
     // onSuccess Geolocation
     //
     function onSuccessPosition(position) {
-//        var element = document.getElementById('geolocation');
-//        alert( 'Latitude: '           + position.coords.latitude              + '<br />' +
-//                            'Longitude: '          + position.coords.longitude             + '<br />' +
-//                            'Altitude: '           + position.coords.altitude              + '<br />' +
-//                            'Accuracy: '           + position.coords.accuracy              + '<br />' +
-//                            'Altitude Accuracy: '  + position.coords.altitudeAccuracy      + '<br />' +
-//                            'Heading: '            + position.coords.heading               + '<br />' +
-//                            'Speed: '              + position.coords.speed                 + '<br />' +
-//                            'Timestamp: '          +                                   position.timestamp          + '<br />');
-        console.log('entrou');
-        console.log(position.coords.latitude + ',' + position.coords.longitude);
-        console.log(mobileDemo.center);
         mobileDemo.center = position.coords.latitude + ',' + position.coords.longitude;
-        console.log(mobileDemo.center);
+
         loadMap();
+
+        popMarkers();
+    }
+
+    function popMarkers(){
+		$.getJSON("http://mapadowifi.com.br/getSpots.php?lat=-23.511234&long=-46.63132131",
+		    function(data) {
+		      $.each(data, function(i,item){
+ 					var marker = $('#map_canvas').gmap('addMarker', {id: i, 'bounds':true, 'position': new google.maps.LatLng(item.lat,item.long), title: item.name});
+                    marker.click(function() {
+                        $('#map_canvas').gmap('openInfoWindow', {'content': item.name}, this);
+                    });
+
+		        //$('#map_canvas').gmap('addMarker', { 'bounds':true, 'position': new google.maps.LatLng(item.lat,item.long), 'animation': google.maps.Animation.DROP } );
+
+//				$('#map_canvas').gmap('addMarker', { id: i, 'bounds':true, 'position': new google.maps.LatLng(item.lat,item.long), 'animation': google.maps.Animation.DROP }, function(map, marker){
+				        //$('#map_canvas').gmap('addInfoWindow', { 'position': new google.maps.LatLng(item.lat,item.long), 'content': 'teste' });//, function(iw) {
+//				                $(marker).click(function() {
+//				                        iw.open(map, marker);
+//				                        map.panTo(marker.getPosition());
+//				                });
+//				        });
+
+//				});
+		      });
+	    });
     }
 
     // onError Callback receives a PositionError object
@@ -56,7 +70,7 @@
 	var Marcador;
 	
 	$('#home').live('pageinit', function() {
-//		loadMap();
+
 	});
 
 	function loadMap(){
@@ -81,11 +95,6 @@
 		$('#map_canvas2').gmap('addMarker', { 'position': new google.maps.LatLng(-23.559916, -46.688719) }, function(map, marker){ marker.setAnimation(google.maps.Animation.BOUNCE); Marcador = marker; }  );
 			
 	});
-	
-	
-	// Exemplo de inserção de marcador por posição
-//		var posAtual = new google.maps.LatLng(-23.560781, -46.686873);
-//		Marcador.setPosition(posAtual);
 	
 </script>
 </head>
