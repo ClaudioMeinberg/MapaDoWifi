@@ -15,54 +15,106 @@
 		<script type="text/javascript" src="js/ui/jquery.ui.map.extensions.js"></script>
 
 <script>
-    document.addEventListener("deviceready", onDeviceReady, false);
+	$(function() {
+    	document.addEventListener("deviceready", onDeviceReady, false);
+
+    	$('.clsInsert').bind("click", function(){
+    		createSpot();
+    	});
+    });
+
+    function createSpot(){
+    	//TODO: validadeSpot
+    	validadeSpot();
+    	
+    	//TODO: inserir informações sobre o cadastro para conferencia
+    	if(!confirm('Deseja realmente inserir esta rede?')){
+    		return false;
+    	}
+
+    	//TODO: insertNewSpot
+    	insertNewSpot();
+    }
+
+    function insertNewSpot(){
+		$.post("http://mapadowifi.com.br/createSpot.php", $("#frmCreateSpot").serialize(), 
+			function(data){
+				if(data === 'OK'){
+					alert('Rede criada com sucesso!');
+					$("#frmCreateSpot").reset();
+					console.log('resetou');
+				} else {
+					alert('Erro: ' + data);
+				}
+			}
+		)
+		.done(function() { 
+			//finalizou 
+		})
+		.fail(function() { alert("erro"); })
+    }
     
+    function validadeSpot(){
+    	return true;
+    }
+
     function onDeviceReady() {
         navigator.geolocation.getCurrentPosition(onSuccessPosition, onErrorPosition);
     }
-
-    // onSuccess Geolocation
-    //
     function onSuccessPosition(position) {
         mobileDemo.center = position.coords.latitude + ',' + position.coords.longitude;
 
         loadMap();
 
         popMarkers();
+
+        startWatch();
+    }
+    function onErrorPosition(error) {
+        alert('code: '    + error.code    + '\n' +
+                'message: ' + error.message + '\n');
     }
 
     function popMarkers(){
 		$.getJSON("http://mapadowifi.com.br/getSpots.php?lat=-23.511234&long=-46.63132131",
 		    function(data) {
 		      $.each(data, function(i,item){
+		      		var infoForWindow = item.name + '<br/><font size=2>' + item.address + '<br/><strong>Rede</strong>: ' + item.SSID;
+		      		infoForWindow += item.protected == 'Y' ? '<br/><strong>Senha</strong>: ' + item.password + '</font>' : '</font>';
+		      		infoForWindow += '<br/><font size=1>Cadadastrado em ' + item.effdt + '</font>'; 
+
  					var marker = $('#map_canvas').gmap('addMarker', {id: i, 'bounds':true, 'position': new google.maps.LatLng(item.lat,item.long), title: item.name});
                     marker.click(function() {
-                        $('#map_canvas').gmap('openInfoWindow', {'content': item.name}, this);
+                        $('#map_canvas').gmap('openInfoWindow', {'content': infoForWindow }, this);
                     });
-
-		        //$('#map_canvas').gmap('addMarker', { 'bounds':true, 'position': new google.maps.LatLng(item.lat,item.long), 'animation': google.maps.Animation.DROP } );
-
-//				$('#map_canvas').gmap('addMarker', { id: i, 'bounds':true, 'position': new google.maps.LatLng(item.lat,item.long), 'animation': google.maps.Animation.DROP }, function(map, marker){
-				        //$('#map_canvas').gmap('addInfoWindow', { 'position': new google.maps.LatLng(item.lat,item.long), 'content': 'teste' });//, function(iw) {
-//				                $(marker).click(function() {
-//				                        iw.open(map, marker);
-//				                        map.panTo(marker.getPosition());
-//				                });
-//				        });
-
-//				});
 		      });
 	    });
     }
 
+</script>
+<script>
+var watchID = null;
+
+    
+    function startWatch() {
+        var options = { frequency: 10000 };
+        watchID = navigator.geolocation.watchPosition(onSuccessWatch, onErrorWatch, options);
+    }
+
+    // onSuccess Geolocation
+    //
+    function onSuccessWatch(position) {
+        $('#hidLat').val(position.coords.latitude);
+        $('#hidLong').val(position.coords.longitude);
+    }
+
     // onError Callback receives a PositionError object
     //
-    function onErrorPosition(error) {
+    function onErrorWatch(error) {
         alert('code: '    + error.code    + '\n' +
-                'message: ' + error.message + '\n');
+              'message: ' + error.message + '\n');
     }
 </script>
-
 <script>
 	var mobileDemo = { 'center': '-23.560781,-46.686873', 'zoom': 12 };
 	var inicio = new google.maps.LatLng(-23.560781, -46.686873);
@@ -100,7 +152,7 @@
 </head>
 <body>
 		<div id="home" data-role="page">
-			<div data-role="header">
+			<div data-role="header" data-position="fixed">
 				<h1>Mapa do WiFi <span id="version"></span></h1>
 				<a href="#novo" data-icon="gear" class="ui-btn-right" data-transition="flip">Novo</a>
 			</div>
@@ -120,57 +172,62 @@
 		</div>
 
 		<div id="novo" data-role="page">
-			<div data-role="header">
-				<h1>Mapa do WiFi - Novo <span id="version"></span></h1>
+			<div data-role="header" data-position="fixed">
+				<h1>Novo WiFi<span id="version"></span></h1>
 				<a data-rel="back" data-icon="back" >Cancelar</a>
-				<a href="#"  data-icon="check" >Inserir</a>
+				<a href="#"  data-icon="check" class="clsInsert" >Inserir</a>
 			</div>
 
-			<div data-role="content">					
-				<ul data-role="listview" data-inset="true" data-theme="c" data-dividertheme="a"> 
-					<li>
-						<label for="cboType">Tipo de lugar:</label>
-    					<select name="cboType" id="cboType">
-    						<option>Bar</option>
-    						<option>Restaurante</option>
-    						<option>Hotel</option>
-    						<option>Livraria</option>
-    						<option>Outros</option>
-    					</select>		
-					</li>
-					<li>
-						<label for="txtName">Nome do Estabelecimento:</label>
-    					<input type="text" name="txtName" id="txtName" value=""  />
-					</li>
-					<li>
-						<label for="txtAddress">Endere&ccedil;o:</label>
-    					<input type="text" name="txtAddress" id="txtAddress" value=""  />
-					</li>
-					<li>
-						<label for="txtSSID">Nome da Rede:</label>
-    					<input type="text" name="txtSSID" id="txtSSID" value=""  />
-					</li>
-					<li>
-						<label for="cboProtected">Protegida por senha?</label>
-    					<select name="cboProtected" id="cboProtected">
-    						<option>N&atilde;o</option>
-    						<option>Sim</option>
-    					</select>
-					</li>
-					<li>
-						<label for="txtPassword">Senha:</label>
-    					<input type="text" name="txtPassword" id="txtPassword" value=""  />
-					</li>
-					<!--<li><a href="#comoChegar">Onde tem?</a></li>-->
-					<li>
-						<div data-role="controlgroup" data-type="horizontal">
-							<button data-rel="back" data-icon="back">CANCELAR</button><button data-icon="check">INSERIR</button>
-						</div>
-					</li>
-				</ul>
+			<div data-role="content">
+				<form name="frmCreateSpot" id="frmCreateSpot">
+					<input type="hidden" name="hidLat" id="hidLat">
+					<input type="hidden" name="hidLong" id="hidLong">
+					<ul data-role="listview" data-inset="true" data-theme="c" data-dividertheme="a"> 
+						<li>
+							<label for="cboType">Tipo de lugar:</label>
+	    					<select name="cboType" id="cboType">
+	    						<option value="0">Bar</option>
+	    						<option value="1">Restaurante</option>
+	    						<option value="2">Hotel</option>
+	    						<option value="3">Livraria</option>
+	    						<option value="4">Outros</option>
+	    					</select>		
+						</li>
+						<li>
+							<label for="txtName">Nome do Estabelecimento:</label>
+	    					<input type="text" name="txtName" id="txtName" value=""  />
+						</li>
+						<li>
+							<label for="txtAddress">Endere&ccedil;o:</label>
+	    					<input type="text" name="txtAddress" id="txtAddress" value=""  />
+						</li>
+						<li>
+							<label for="txtSSID">Nome da Rede:</label>
+	    					<input type="text" name="txtSSID" id="txtSSID" value=""  />
+						</li>
+						<li>
+							<label for="cboProtected">Protegida por senha?</label>
+	    					<select name="cboProtected" id="cboProtected">
+	    						<option value="N">N&atilde;o</option>
+	    						<option value="Y">Sim</option>
+	    					</select>
+						</li>
+						<li>
+							<label for="txtPassword">Senha:</label>
+	    					<input type="text" name="txtPassword" id="txtPassword" value=""  />
+						</li>
+						<!--<li><a href="#comoChegar">Onde tem?</a></li>-->
+						<li>
+							<div data-role="controlgroup" data-type="horizontal">
+								<!--<input type="button" data-rel="back" data-icon="back" value="CANCELAR">-->
+								<input type="button" data-icon="check" id="btnInsert" class="clsInsert" value="INSERIR">
+							</div>
+						</li>
+					</ul>
+				</form>
 			</div>
       
-			<div data-role="footer">
+			<div data-role="footer" data-position="fixed">
 				<h3>CC BY-SA 3.0 BR</h3>
 			</div>
 		</div>
